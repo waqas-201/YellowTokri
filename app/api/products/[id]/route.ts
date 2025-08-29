@@ -48,11 +48,11 @@ export async function PUT(
         ...(name && { name }),
         ...(slug && { slug }),
         ...(description && { description }),
-        ...(price && { price: parseFloat(price) }),
-        ...(compareAtPrice && { compareAtPrice: parseFloat(compareAtPrice) }),
+        ...(price !== undefined && { price: parseFloat(price) }),
+        ...(compareAtPrice !== undefined && { compareAtPrice: parseFloat(compareAtPrice) }),
         ...(images && { images }),
         ...(categoryId && { categoryId }),
-        ...(inventory && { inventory: parseInt(inventory) }),
+        ...(inventory !== undefined && { inventory: parseInt(inventory) }),
       },
       include: { category: true },
     })
@@ -65,13 +65,26 @@ export async function PUT(
 }
 
 /**
- * DELETE /api/products/:id → Delete product
+ * DELETE /api/products/:id → Safe Delete product
  */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check if any orders exist for this product
+    const ordersCount = await prisma.orderItem.count({
+      where: { productId: params.id },
+    })
+
+    if (ordersCount > 0) {
+      return NextResponse.json(
+        { error: 'Cannot delete product with existing orders.' },
+        { status: 400 }
+      )
+    }
+
+    // Safe to delete if no orders
     await prisma.product.delete({
       where: { id: params.id },
     })

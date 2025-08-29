@@ -20,17 +20,17 @@ interface Product {
 export function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  
 
   useEffect(() => {
     async function fetchFeaturedProducts() {
       try {
         const response = await fetch('/api/products?featured=true&limit=8')
         const data = await response.json()
-        console.log(data )
-        setProducts(data)
+        // Ensure data is always an array
+        setProducts(Array.isArray(data) ? data : [])
       } catch (error) {
         console.error('Failed to fetch featured products:', error)
+        setProducts([])
       } finally {
         setLoading(false)
       }
@@ -68,15 +68,30 @@ export function FeaturedProducts() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products?.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))} 
-        </div>
+        {products.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products.map((product) => {
+              const safeProduct = {
+                id: product.id ?? 'unknown',
+                name: product.name ?? 'Unnamed Product',
+                slug: product.slug ?? '#',
+                price: product.price ?? 0,
+                compareAtPrice: product.compareAtPrice ?? null,
+                images: product.images?.length ? product.images : ['/placeholder.png'],
+                ratings: product.ratings ?? 0,
+                reviewCount: product.reviewCount ?? 0,
+                featured: product.featured ?? false,
+              }
+              return <ProductCard key={safeProduct.id} product={safeProduct} />
+            })}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center">No featured products available at the moment.</p>
+        )}
 
         <div className="text-center mt-12">
-          <Link 
-            href="/products" 
+          <Link
+            href="/products"
             className="inline-flex items-center px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded-lg transition-colors"
           >
             View All Products
