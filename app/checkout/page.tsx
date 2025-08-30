@@ -257,7 +257,7 @@ export default function CheckoutPage() {
                         <p className="text-gray-600 text-sm">Qty: {item.quantity}</p>
                       </div>
                       <span className="font-semibold text-gray-900">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -266,19 +266,19 @@ export default function CheckoutPage() {
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                    <span className="font-semibold">{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
-                    <span className="font-semibold">{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+                    <span className="font-semibold">{shipping === 0 ? 'Free' : `{shipping.toFixed(2)}`}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
-                    <span className="font-semibold">${tax.toFixed(2)}</span>
+                    <span className="font-semibold">{tax.toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between">
                     <span className="text-lg font-semibold text-gray-900">Total</span>
-                    <span className="text-lg font-bold text-gray-900">${total.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-gray-900">{total.toFixed(2)}</span>
                   </div>
 
                   {codValue && (
@@ -300,7 +300,7 @@ export default function CheckoutPage() {
                 {shipping > 0 && (
                   <div className="p-3 bg-yellow-50 rounded-lg">
                     <p className="text-sm text-yellow-800">
-                      Add ${(50 - subtotal).toFixed(2)} more to get free shipping!
+                      Add {(50 - subtotal).toFixed(2)} more to get free shipping!
                     </p>
                   </div>
                 )}
