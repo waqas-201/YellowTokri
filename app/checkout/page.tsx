@@ -89,7 +89,23 @@ export default function CheckoutPage() {
 
       if (response.ok) {
         const order = await response.json()
-        console.log('Order Response:', order)
+        if (order.email) {
+
+          const result = await fetch('/api/send', {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to: order.email, firstName: order.shippingAddress.firstName })
+
+          })
+          await fetch('/api/me', {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(order)
+
+          })
+          console.log(result);
+
+        }
 
         clearCart()
         setOrderNumber(order.orderNumber) // <-- trigger redirect via useEffect
