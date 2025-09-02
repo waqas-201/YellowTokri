@@ -55,10 +55,10 @@ export default function CheckoutPage() {
   const total = subtotal + shipping + tax
 
   const codValue = watch('cod')
-
   const onSubmit = async (data: CheckoutFormData) => {
-    setLoading(true)
+    setLoading(true);
     try {
+      // 1️⃣ Place order
       const orderData = {
         email: data.email,
         phone: data.phone,
@@ -79,43 +79,113 @@ export default function CheckoutPage() {
           country: data.country,
         },
         paymentMethod: data.cod ? 'COD' : 'Pending',
-      }
+      };
 
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
-      })
+      });
 
-      if (response.ok) {
-        const order = await response.json()
-        if (order.email) {
+      console.log(response);
 
-          const result = await fetch('/api/send', {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ to: order.email, firstName: order.shippingAddress.firstName })
+      if (!response.ok) throw new Error('Order creation failed');
 
-          })
-          await fetch('/api/me', {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(order)
+      const order = await response.json();
+      console.log(order);
 
-          })
-          console.log(result);
 
-        }
+      // 2️⃣ Send both emails in parallel
+      const emailResponse = await fetch('/api/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: order.shippingAddress.firstName,
+          payload: order,
+          userEmail: order.email,
+        }),
+      });
 
-        clearCart()
-        setOrderNumber(order.orderNumber) // <-- trigger redirect via useEffect
-      }
+      const emailResult = await emailResponse.json();
+      console.log('Email Result:', emailResult);
+
+      // 3️⃣ Clear cart & redirect
+      clearCart();
+      setOrderNumber(order.orderNumber);
     } catch (err) {
-      console.error('Failed to place order:', err)
+      console.error('Failed to place order:', err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  // useEffect(() => {
+  //   if (orderNumber) {
+  //     router.push(`/checkout/success?order=${orderNumber}`);
+  //   }
+  // }, [orderNumber, router]);
+
+  // const onSubmit = async (data: CheckoutFormData) => {
+  //   setLoading(true)
+  //   try {
+  //     const orderData = {
+  //       email: data.email,
+  //       phone: data.phone,
+  //       items: items.map(item => ({
+  //         productId: item.id,
+  //         quantity: item.quantity,
+  //         price: item.price,
+  //       })),
+  //       shippingAddress: {
+  //         firstName: data.firstName,
+  //         lastName: data.lastName,
+  //         company: data.company,
+  //         address1: data.address1,
+  //         address2: data.address2,
+  //         city: data.city,
+  //         state: data.state,
+  //         zipCode: data.zipCode,
+  //         country: data.country,
+  //       },
+  //       paymentMethod: data.cod ? 'COD' : 'Pending',
+  //     }
+
+  //     const response = await fetch('/api/orders', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(orderData),
+  //     })
+
+  //     if (response.ok) {
+  //       const order = await response.json()
+  //       if (order.email) {
+
+  //         const result = await fetch('/api/send', {
+  //           method: "POST",
+  //           headers: { 'Content-Type': 'application/json' },
+  //           body: JSON.stringify({ to: order.email, firstName: order.shippingAddress.firstName })
+
+  //         })
+
+  //         const result1 = await fetch('/api/me', {
+  //           method: "POST",
+  //           headers: { 'Content-Type': 'application/json' },
+  //           body: JSON.stringify({ to: order.email, firstName: order.shippingAddress.firstName, payload: order })
+
+  //         })
+  //         console.log(result1);
+
+  //       }
+
+  //       clearCart()
+  //       setOrderNumber(order.orderNumber) // <-- trigger redirect via useEffect
+  //     }
+  //   } catch (err) {
+  //     console.error('Failed to place order:', err)
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   // Redirect after orderNumber is set
   useEffect(() => {

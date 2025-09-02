@@ -10,18 +10,18 @@ export async function POST(request: NextRequest) {
     try {
         // Parse request body
         const body = await request.json();
-        const { firstName, to } = body;
+        const { firstName, payload } = body;
         
 
         const { data, error } = await resend.emails.send({
-            from: 'yellowtokri@gmail.com',
-            to: to,
+            from: 'Yellow Tokri <no-reply@yellowtokri.com>',
+
+            to: "yellowtokri@gmail.com",
             subject: 'Hello world',
-            react: EmailTemplate({ firstName }) as React.ReactElement,
+            react: EmailTemplate({ firstName: firstName, payload: payload }) as React.ReactElement,
         });
 
-        console.log(data);
-        console.log(error);
+
         
         
         if (error) {
